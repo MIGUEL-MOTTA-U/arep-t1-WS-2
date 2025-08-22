@@ -1,0 +1,294 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #0f0f23, #1a1a2e, #16213e);
+    color: #e0e6ed;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.7;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* Partículas sutiles de fondo */
+.particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.particle {
+    position: absolute;
+    background: rgba(64, 224, 208, 0.3);
+    border-radius: 50%;
+    animation: gentleFloat 8s ease-in-out infinite;
+}
+
+.particle:nth-child(1) { width: 2px; height: 2px; left: 15%; animation-delay: 0s; }
+.particle:nth-child(2) { width: 3px; height: 3px; left: 35%; animation-delay: 2s; }
+.particle:nth-child(3) { width: 2px; height: 2px; left: 55%; animation-delay: 4s; }
+.particle:nth-child(4) { width: 3px; height: 3px; left: 75%; animation-delay: 6s; }
+
+@keyframes gentleFloat {
+    0%, 100% { transform: translateY(100vh) translateX(0px); opacity: 0; }
+    10%, 90% { opacity: 1; }
+    50% { transform: translateY(-10px) translateX(20px); }
+}
+
+/* Contenedor principal */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    animation: fadeInUp 1.2s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        transform: translateY(40px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Header minimalista */
+.header {
+    text-align: center;
+    margin-bottom: 4rem;
+    animation: slideDown 1s ease-out 0.3s both;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.title {
+    font-size: 3.5rem;
+    font-weight: 300;
+    background: linear-gradient(135deg, #40e0d0, #64ffda);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: subtleGradient 4s ease-in-out infinite;
+    margin-bottom: 1rem;
+    letter-spacing: -2px;
+}
+
+@keyframes subtleGradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: #a0a0a0;
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    position: relative;
+}
+
+.subtitle::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #40e0d0, transparent);
+    transform: translateX(-50%);
+    animation: lineGlow 3s ease-in-out infinite;
+}
+
+@keyframes lineGlow {
+    0%, 100% { opacity: 0.3; width: 60px; }
+    50% { opacity: 1; width: 100px; }
+}
+
+/* Contenido de texto */
+.content {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 3rem;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    animation: contentReveal 1s ease-out 0.6s both;
+}
+
+@keyframes contentReveal {
+    from {
+        transform: translateY(30px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(64, 224, 208, 0.05), transparent);
+    animation: gentleShimmer 6s ease-in-out infinite;
+}
+
+@keyframes gentleShimmer {
+    0%, 100% { left: -100%; }
+    50% { left: 100%; }
+}
+
+.content-header {
+    font-size: 2rem;
+    color: #40e0d0;
+    font-weight: 300;
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.text-block {
+    font-size: 1.1rem;
+    color: #c0c0c0;
+    margin-bottom: 2rem;
+    text-align: justify;
+    opacity: 0;
+    animation: textFadeIn 0.8s ease-out both;
+}
+
+.text-block:nth-child(2) { animation-delay: 0.9s; }
+.text-block:nth-child(3) { animation-delay: 1.2s; }
+.text-block:nth-child(4) { animation-delay: 1.5s; }
+
+@keyframes textFadeIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.highlight {
+    color: #64ffda;
+    font-weight: 400;
+    position: relative;
+}
+
+.highlight::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(100, 255, 218, 0.3);
+    transform: scaleX(0);
+    animation: underlineGrow 0.8s ease-out 2s forwards;
+}
+
+@keyframes underlineGrow {
+    to { transform: scaleX(1); }
+}
+
+/* Footer minimalista */
+.footer {
+    text-align: center;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    animation: footerFade 1s ease-out 1.8s both;
+}
+
+@keyframes footerFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.footer p {
+    color: #707070;
+    font-size: 0.9rem;
+    font-weight: 300;
+}
+
+/* Navegación sutil */
+.nav-hint {
+    position: fixed;
+    top: 2rem;
+    left: 2rem;
+    color: #606060;
+    font-size: 0.9rem;
+    font-weight: 300;
+    opacity: 0;
+    animation: navHintFade 1s ease-out 2.5s forwards;
+}
+
+@keyframes navHintFade {
+    to { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 2rem 1rem;
+    }
+
+    .title {
+        font-size: 2.5rem;
+        letter-spacing: -1px;
+    }
+
+    .content {
+        padding: 2rem;
+    }
+
+    .content-header {
+        font-size: 1.5rem;
+    }
+
+    .text-block {
+        font-size: 1rem;
+        text-align: left;
+    }
+
+    .nav-hint {
+        display: none;
+    }
+}
+
+/* Efecto de scroll suave */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Cursor personalizado sutil */
+* {
+    cursor: default;
+}
+
+a, button {
+    cursor: pointer;
+}

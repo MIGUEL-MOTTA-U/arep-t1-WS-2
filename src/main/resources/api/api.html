@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Prueba HTTP Server</title>
+    <link rel="stylesheet" href="/api/styles.css">
+</head>
+<body>
+<h1>Cliente de prueba</h1>
+
+<section>
+    <h2>/name</h2>
+    <button onclick="fetchName()">Probar /name</button>
+    <pre id="nameResult"></pre>
+</section>
+
+<section>
+    <h2>/books</h2>
+    <input id="bookInput" type="text" placeholder="Nombre del libro">
+    <button onclick="addBook()">Agregar libro</button>
+    <pre id="booksResult"></pre>
+</section>
+
+<section>
+    <h2>/stop</h2>
+    <button onclick="stopServer()">Detener servidor</button>
+    <pre id="stopResult"></pre>
+</section>
+<section>
+    <h1>Otras Rutas</h1>
+    <ul>
+        <li><a href="/about">Recurso HTML</a></li>
+        <li><a href="/images/img_2.png/">Recurso PNG</a></li>
+        <li><a href="/api/script.js">Recurso JavaScript</a></li>
+        <li><a href="/api/styles.css">Recurso CSS</a></li>
+        <li><a href="/books?name=Boulevard">Recurso REST</a></li>
+    </ul>
+
+</section>
+
+<script src="/api/script.js"></script>
+</body>
+</html>
