@@ -4,14 +4,11 @@ import escuelaing.edu.co.framework.errors.HttpServerErrors;
 import escuelaing.edu.co.framework.models.HTTPFrameworkRequest;
 import escuelaing.edu.co.framework.models.HTTPFrameworkResponse;
 import escuelaing.edu.co.framework.services.interfaces.HTTPServerHandler;
-import escuelaing.edu.co.framework.services.interfaces.HTTPServerService;
 
 import java.net.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -21,44 +18,22 @@ import java.util.logging.Logger;
  * @version 1.1
  * @since 2025-08-22
  */
-public class HTTPServerImpl implements HTTPServerService {
-    private static HTTPServerImpl instance;
-    private String RESOURCES_PATH = "src/main/resources";
-    private final Logger logger = Logger.getLogger(HTTPServerImpl.class.getName());
-    private final Map<String, HTTPServerHandler> routes;
-    private boolean running = false;
-    private final List<String> box;
-
-
-    public static HTTPServerImpl getInstance() {
-        if (instance == null) {
-            instance = new HTTPServerImpl();
-        }
-        return instance;
-    }
-
-    private HTTPServerImpl() {
-        routes = new HashMap<>();
-        box = new ArrayList<>();
-    }
+public class HTTPServerImpl {
+    private static String RESOURCES_PATH = "src/main/resources";
+    private static final Logger logger = Logger.getLogger(HTTPServerImpl.class.getName());
+    private static final Map<String, HTTPServerHandler> routes = new HashMap<>();
+    private static boolean running = false;
 
     /**
      * Registers a GET route with the specified URL and callback handler.
      * @param url the URL path for the GET request
      * @param callback the handler to process the GET request
      */
-    @Override
-    public void get(String url, HTTPServerHandler callback) {
-        this.routes.put(url, callback);
+    public static void get(String url, HTTPServerHandler callback) {
+        routes.put(url, callback);
     }
 
-    /**
-     * Sets the directory for serving static files.
-     * It creates the directory if it does not exist.
-     * @param path the path to the static files directory
-     */
-    @Override
-    public void staticFiles(String path) {
+    public static void staticFiles(String path) {
         File file = new File(RESOURCES_PATH + path);
         if (!file.exists() || !file.isDirectory()) {
             try {
@@ -70,18 +45,16 @@ public class HTTPServerImpl implements HTTPServerService {
         RESOURCES_PATH += path;
     }
 
-    @Override
-    public void post(String url, HTTPServerHandler callback) {
+    // TODO: Implement POST, PUT, DELETE methods
+    public static void post(String url, HTTPServerHandler callback) {
         logger.warning("POST method is not implemented yet.");
     }
 
-    @Override
-    public void put(String url, HTTPServerHandler callback) {
+    public static void put(String url, HTTPServerHandler callback) {
         logger.warning("PUT method is not implemented yet.");
     }
 
-    @Override
-    public void delete(String url, HTTPServerHandler callback) {
+    public static void delete(String url, HTTPServerHandler callback) {
         logger.warning("DELETE method is not implemented yet.");
     }
 
@@ -90,8 +63,7 @@ public class HTTPServerImpl implements HTTPServerService {
      * The server listens on given port and handles incoming requests.
      * @param port the server port to listen on
      */
-    @Override
-    public void start(int port) {
+    public static void start(int port) {
         ServerSocket serverSocket = null;
         running = true;
         try {
@@ -117,8 +89,11 @@ public class HTTPServerImpl implements HTTPServerService {
         }
     }
 
-    @Override
-    public void stop() {
+    /**
+     * Stops the HTTP server.
+     * It sets the running flag to false, which will cause the server loop to exit.
+     */
+    public static void stop() {
         stopServer();
     }
 
@@ -128,7 +103,7 @@ public class HTTPServerImpl implements HTTPServerService {
      * @return the socket connected to the client
      * @throws IOException if an I/O error occurs when accepting the connection
      */
-    private Socket acceptClient(ServerSocket serverSocket) throws IOException {
+    private static Socket acceptClient(ServerSocket serverSocket) throws IOException {
         logger.info("Waiting for a client connection...");
         Socket clientSocket;
         clientSocket = serverSocket.accept();
@@ -142,7 +117,7 @@ public class HTTPServerImpl implements HTTPServerService {
      * @param clientSocket the socket connected to the client
      * @throws IOException if an I/O error occurs when reading from or writing to the socket
      */
-    private void handleRequest(Socket clientSocket) throws IOException {
+    private static void handleRequest(Socket clientSocket) throws IOException {
         BufferedReader in = new BufferedReader( new InputStreamReader( clientSocket.getInputStream()));
         String line = in.readLine();
         if (line == null || line.split(" ").length <= 1) {
@@ -183,7 +158,7 @@ public class HTTPServerImpl implements HTTPServerService {
      * @param error the HttpServerErrors instance representing the error
      * @throws IOException if an I/O error occurs when writing to the socket
      */
-    private void handleErrorRequest(Socket clientSocket, HttpServerErrors error) throws IOException {
+    private static void handleErrorRequest(Socket clientSocket, HttpServerErrors error) throws IOException {
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
         BufferedOutputStream outData = new BufferedOutputStream(clientSocket.getOutputStream());
         byte[] body = error.getMessage().getBytes(StandardCharsets.UTF_8);
@@ -211,7 +186,7 @@ public class HTTPServerImpl implements HTTPServerService {
      * @param clientSocket the socket connected to the client
      * @throws IOException if an I/O error occurs when reading from or writing to the socket
      */
-    private void handleStaticRoute(String uri, Socket clientSocket) throws IOException {
+    private static void handleStaticRoute(String uri, Socket clientSocket) throws IOException {
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
         BufferedOutputStream outData = new BufferedOutputStream(clientSocket.getOutputStream());
         sendAnyFile(out, outData,uri);
@@ -219,7 +194,14 @@ public class HTTPServerImpl implements HTTPServerService {
         out.close();
     }
 
-    private void handleDynamicRoute(HTTPFrameworkResponse response, Socket clientSocket) throws IOException {
+    /**
+     * Handles dynamic routes by sending the response generated by the route handler.
+     * It writes the response body to the client socket.
+     * @param response the HTTPFrameworkResponse containing the response body
+     * @param clientSocket the socket connected to the client
+     * @throws IOException if an I/O error occurs when writing to the socket
+     */
+    private static void handleDynamicRoute(HTTPFrameworkResponse response, Socket clientSocket) throws IOException {
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
         BufferedOutputStream outData = new BufferedOutputStream(clientSocket.getOutputStream());
         String responseRaw = response.getBody();
@@ -236,7 +218,7 @@ public class HTTPServerImpl implements HTTPServerService {
      * @param filePath the path of the file to be sent
      * @param contentType the content type of the file
      */
-    private void sendFileResponse(PrintWriter out, BufferedOutputStream outData, String filePath, String contentType) throws IOException {
+    private static void sendFileResponse(PrintWriter out, BufferedOutputStream outData, String filePath, String contentType) throws IOException {
         File file = new File(RESOURCES_PATH + filePath);
         if (!file.exists()) {
             throw HttpServerErrors.NOT_FOUND_404;
@@ -267,7 +249,7 @@ public class HTTPServerImpl implements HTTPServerService {
      * @param filePath the path of the file to be sent
      * @throws IOException if an I/O error occurs when reading from or writing to the socket
      */
-    private void sendAnyFile(PrintWriter out, BufferedOutputStream outData, String filePath) throws IOException {
+    private static void sendAnyFile(PrintWriter out, BufferedOutputStream outData, String filePath) throws IOException {
         File file = new File(RESOURCES_PATH+filePath);
         if (!file.exists()) {
             throw HttpServerErrors.NOT_FOUND_404;
@@ -295,7 +277,7 @@ public class HTTPServerImpl implements HTTPServerService {
      * @param jsonContent the JSON content to be sent
      * @throws IOException if an I/O error occurs when writing to the socket
      */
-    private void sendJSONResponse(PrintWriter out, BufferedOutputStream outData, String jsonContent) throws IOException {
+    private static void sendJSONResponse(PrintWriter out, BufferedOutputStream outData, String jsonContent) throws IOException {
         byte[] body = jsonContent.getBytes(StandardCharsets.UTF_8);
         out.println("HTTP/1.1 200 OK");
         out.println("Content-Type: application/json; charset=UTF-8");
@@ -316,7 +298,7 @@ public class HTTPServerImpl implements HTTPServerService {
      * @param content the content to be sent in the response
      * @throws IOException if an I/O error occurs when writing to the socket
      */
-    private void sendResponse(PrintWriter out, BufferedOutputStream outData, String content) throws IOException {
+    private static void sendResponse(PrintWriter out, BufferedOutputStream outData, String content) throws IOException {
         byte[] body = content.getBytes(StandardCharsets.UTF_8);
         out.println("HTTP/1.1 200 OK");
         out.println("Content-Type: text/plain; charset=UTF-8");
@@ -329,12 +311,12 @@ public class HTTPServerImpl implements HTTPServerService {
     }
 
 
-    private void stopServer() {
+    private static void stopServer() {
         running = false;
         logger.info("Server is stopping...");
     }
 
-    private String obtainFilePath(String uri) {
+    private static String obtainFilePath(String uri) {
         String path = uri.split("\\?")[0];
         if (path.equals("/")) {
             return "/index.html";
@@ -342,7 +324,11 @@ public class HTTPServerImpl implements HTTPServerService {
         return path;
     }
 
-    private void addCORSHeaders(PrintWriter out) {
+    /**
+     * Adds CORS headers to the response.
+     * @param out the PrintWriter to write the headers
+     */
+    private static void addCORSHeaders(PrintWriter out) {
         out.println("Access-Control-Allow-Origin: *");
         out.println("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
         out.println("Access-Control-Allow-Headers: Content-Type");

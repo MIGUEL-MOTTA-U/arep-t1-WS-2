@@ -1,5 +1,7 @@
 package escuelaing.edu.co.framework.services.implementations;
 
+import escuelaing.edu.co.framework.models.HTTPFrameworkRequest;
+import escuelaing.edu.co.framework.models.HTTPFrameworkResponse;
 import escuelaing.edu.co.framework.services.interfaces.HTTPServerHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HTTPServerImplSimpleTest {
 
-    private HTTPServerImpl httpServer;
     private Path tmpResources;
 
     @Mock
@@ -25,16 +26,10 @@ class HTTPServerImplSimpleTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        Field instanceField = HTTPServerImpl.class.getDeclaredField("instance");
-        instanceField.setAccessible(true);
-        instanceField.set(null, null);
-
-        httpServer = HTTPServerImpl.getInstance();
-
         tmpResources = Files.createTempDirectory("httpserver_test_" + UUID.randomUUID());
         Field resPathField = HTTPServerImpl.class.getDeclaredField("RESOURCES_PATH");
         resPathField.setAccessible(true);
-        resPathField.set(httpServer, tmpResources.toAbsolutePath().toString());
+        resPathField.set(null, tmpResources.toAbsolutePath().toString());
     }
 
     @AfterEach
@@ -45,26 +40,14 @@ class HTTPServerImplSimpleTest {
                     .sorted((a, b) -> -a.compareTo(b))
                     .forEach(File::delete);
         }
-        Field instanceField = HTTPServerImpl.class.getDeclaredField("instance");
-        instanceField.setAccessible(true);
-        instanceField.set(null, null);
-    }
-
-    @Test
-    void getInstance_returnsSameSingleton() {
-        HTTPServerImpl a = HTTPServerImpl.getInstance();
-        HTTPServerImpl b = HTTPServerImpl.getInstance();
-        assertSame(a, b, "getInstance() debe devolver la misma instancia (singleton).");
     }
 
     @Test
     void get_registersRoute() throws Exception {
-        httpServer.get("/miRuta", mockHandler);
-
+        HTTPServerImpl.get("/miRuta", mockHandler);
         Field routesField = HTTPServerImpl.class.getDeclaredField("routes");
         routesField.setAccessible(true);
-        Map<String, HTTPServerHandler> routes = (Map<String, HTTPServerHandler>) routesField.get(httpServer);
-
+        Map<String, HTTPServerHandler> routes = (Map<String, HTTPServerHandler>) routesField.get(null);
         assertTrue(routes.containsKey("/miRuta"), "La ruta registrada debe estar presente.");
         assertSame(mockHandler, routes.get("/miRuta"), "El handler almacenado debe ser el mismo objeto pasado.");
     }
@@ -72,12 +55,10 @@ class HTTPServerImplSimpleTest {
     @Test
     void staticFiles_createsDirectoryAndUpdatesPath() throws Exception {
         String newDir = "/static_test_dir";
-        httpServer.staticFiles(newDir);
-
+        HTTPServerImpl.staticFiles(newDir);
         Field resPathField = HTTPServerImpl.class.getDeclaredField("RESOURCES_PATH");
         resPathField.setAccessible(true);
-        String newResPath = (String) resPathField.get(httpServer);
-
+        String newResPath = (String) resPathField.get(null);
         File dir = new File(newResPath);
         assertTrue(dir.exists() && dir.isDirectory(), "El directorio pasado a staticFiles debe haberse creado.");
         assertTrue(newResPath.endsWith(newDir), "RESOURCES_PATH debe actualizarse con el sufijo indicado.");
@@ -85,14 +66,12 @@ class HTTPServerImplSimpleTest {
 
     @Test
     void post_put_delete_doNotRegisterRoutes_inCurrentImpl() throws Exception {
-        httpServer.post("/p", mockHandler);
-        httpServer.put("/u", mockHandler);
-        httpServer.delete("/d", mockHandler);
-
+        HTTPServerImpl.post("/p", mockHandler);
+        HTTPServerImpl.put("/u", mockHandler);
+        HTTPServerImpl.delete("/d", mockHandler);
         Field routesField = HTTPServerImpl.class.getDeclaredField("routes");
         routesField.setAccessible(true);
-        Map<String, HTTPServerHandler> routes = (Map<String, HTTPServerHandler>) routesField.get(httpServer);
-
+        Map<String, HTTPServerHandler> routes = (Map<String, HTTPServerHandler>) routesField.get(null);
         assertFalse(routes.containsKey("/p"), "POST no debería registrar rutas en la implementación actual.");
         assertFalse(routes.containsKey("/u"), "PUT no debería registrar rutas en la implementación actual.");
         assertFalse(routes.containsKey("/d"), "DELETE no debería registrar rutas en la implementación actual.");
@@ -100,14 +79,28 @@ class HTTPServerImplSimpleTest {
 
     @Test
     void stop_setsRunningFalse() throws Exception {
-        // Forzar running = true
         Field runningField = HTTPServerImpl.class.getDeclaredField("running");
         runningField.setAccessible(true);
-        runningField.set(httpServer, true);
-
-        httpServer.stop();
-
-        boolean runningAfter = (boolean) runningField.get(httpServer);
+        runningField.set(null, true);
+        HTTPServerImpl.stop();
+        boolean runningAfter = (boolean) runningField.get(null);
         assertFalse(runningAfter, "Después de stop(), el flag running debe ser false.");
+    }
+
+    @Test
+    void get_handlesQueryParameters() throws Exception {
+        HTTPServerImpl.get("/hello", (request, response) -> {
+            response.setBody("Hello " + request.getValue("name"));
+            return response;
+        });
+        Field routesField = HTTPServerImpl.class.getDeclaredField("routes");
+        routesField.setAccessible(true);
+        Map<String, HTTPServerHandler> routes = (Map<String, HTTPServerHandler>) routesField.get(null);
+        assertTrue(routes.containsKey("/hello"), "La ruta /hello debe estar registrada.");
+        HTTPFrameworkRequest mockRequest = new HTTPFrameworkRequest("/hello?name=Miguel");
+        HTTPFrameworkResponse mockResponse = new HTTPFrameworkResponse();
+        HTTPFrameworkResponse result = routes.get("/hello").handleRequest(mockRequest, mockResponse);
+        assertTrue(result.getBody().contains("Hello Miguel"),
+                "La respuesta debe contener el nombre extraído del parámetro de consulta.");
     }
 }
