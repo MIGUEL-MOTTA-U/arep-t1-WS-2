@@ -33,8 +33,8 @@ public class HTTPFrameworkRequest {
 
     private void parseRequest(String request) {
         String[] parts = request.split("\\?");
-        if (parts.length > 0) {
-            this.url = parts[0];
+        this.url = parts[0];
+        if (parts.length > 1) {
             parseParams(parts[1]);
         }
     }

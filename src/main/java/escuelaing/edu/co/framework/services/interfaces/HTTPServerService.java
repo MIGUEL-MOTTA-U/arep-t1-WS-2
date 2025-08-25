@@ -7,4 +7,5 @@ public interface HTTPServerService {
     void delete(String url, HTTPServerHandler callback);
     void start(int port);
     void stop();
+    void staticFiles(String path);
 }
